@@ -1,0 +1,169 @@
+# Code Citations
+
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="style.css">
+</head>
+```
+
+
+```
+html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+```
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask User Management API</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Flask User Management API</h1>
+    <p>This is a simple Flask application for user management with authentication.</p>
+    <script src="script.js"></script>
+</body>
+</html>
+from flask import Flask, request, jsonify, session
+from flask_cors import CORS
+from functools import wraps
+
+app = Flask(__name__)
+app.secret_key = 'your_secret_key'  # Change this to a strong secret in production
+CORS(app, supports_credentials=True)  # Allow credentials for session cookies
+
+# User management: username -> {password, age}
+USERS = {
+    "testuser": {"password": "testpassword", "age": 25},
+    "anotheruser": {"password": "anotherpassword", "age": 30}
+}
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('username'):
+            return jsonify({'error': 'Authentication required'}), 401
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    user = USERS.get(username)
+    if user and user['password'] == password:
+        session['username'] = username
+        return jsonify({'message': 'Login successful'})
+    return jsonify({'error': 'Invalid credentials'}), 401
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.pop('username', None)
+    return jsonify({'message': 'Logged out'})
+
+@app.route('/users', methods=['GET'])
+@login_required
+def list_users():
+    # Show usernames and ages, not passwords
+    return jsonify({'users': [{ 'username': u, 'age': USERS[u]['age']} for u in USERS]})
+
+@app.route('/users', methods=['POST'])
+@login_required
+def add_user():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    age = data.get('age')
+    if not username or not password or age is None:
+        return jsonify({'error': 'Username, password, and age required'}), 400
+    if username in USERS:
+        return jsonify({'error': 'User already exists'}), 400
+    USERS[username] = {'password': password, 'age': age}
+    return jsonify({'message': f'User {username} added'})
+
+@app.route('/users/<username>', methods=['DELETE'])
+@login_required
+def delete_user(username):
+    if username not in USERS:
+        return jsonify({'error': 'User not found'}), 404
+    USERS.pop(username)
+    return jsonify({'message': f'User {username} deleted'})
+
+@app.route('/users/<username>/age', methods=['PUT'])
+@login_required
+def update_age(username):
+    if username not in USERS:
+        return jsonify({'error': 'User not found'}), 404
+    data = request.get_json()
+    age = data.get('age')
+    if age is None:
+        return jsonify({'error': 'Age required'}), 400
+    USERS[username]['age'] = age
+    return jsonify({'message': f'Age for {username} updated to {age}'})
+
+@app.route('/users/<username>/age', methods=['GET'])
+@login_required
+def get_age(username):
+    if username not in USERS:
+        return jsonify({'error': 'User not found'}), 404
+    return jsonify({'username': username, 'age': USERS[username]['age']})
+
+@app.route('/chat', methods=['POST'])
+@login_required
+def chat():
+    data = request.get_json()
+    user_message = data.get('message', '')
+    ai_reply = f"You said: {user_message}"
+    return jsonify({'reply': ai_reply})
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'ok'})
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Chat Box</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages"></div>
+        <form class="chat-input-area" id="chatForm" autocomplete="off">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." required />
+            <button type="submit" class="send-btn">Send</button>
+        </form>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+<!-- Add this inside <body> before .chat-container -->
+<div class="login-container" id="loginContainer">
+    <form id="loginForm" autocomplete="off">
+        <input type="text" id="username" placeholder="Username" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="submit">Login</button>
+    </form>
+    <div id="loginError" style="color:red; margin-top:8px;"></div>
+</div>
+<div class="chat-container" id="chatContainer" style="display:none;">
+    <!-- ...existing chat code... -->
+</div>
+<!-- ...existing code... -->
+<audio id="audioPlayer" style="display:none;"></audio>
+</body>
+</html>
