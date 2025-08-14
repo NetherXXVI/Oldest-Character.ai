@@ -1,0 +1,28 @@
+            - name: AI Inference
+  uses: actions/ai-inference@v2.0.0
+  with:
+    # The prompt for the model
+    prompt: # optional, default is 
+    # Path to a file containing the prompt (supports .txt and .prompt.yml formats)
+    prompt-file: # optional, default is 
+    # Template variables in YAML format for .prompt.yml files
+    input: # optional, default is 
+    # Template variables in YAML format mapping variable names to file paths. The file contents will be used for templating.
+    file_input: # optional, default is 
+    # The model to use
+    model: # optional, default is openai/gpt-4o
+    # The endpoint to use
+    endpoint: # optional, default is https://models.github.ai/inference
+    # The system prompt for the model
+    system-prompt: # optional, default is You are a helpful assistant
+    # Path to a file containing the system prompt
+    system-prompt-file: # optional, default is 
+    # The maximum number of tokens to generate
+    max-tokens: # optional, default is 200
+    # The token to use
+    token: # optional, default is ${{ github.token }}
+    # Enable Model Context Protocol integration with GitHub tools
+    enable-github-mcp: # optional, default is false
+    # The token to use for GitHub MCP server (defaults to GITHUB_TOKEN if not specified)
+    github-mcp-token: # optional, default is 
+          
